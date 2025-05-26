@@ -8,10 +8,10 @@ import { useArtists } from '../context/ArtistsContext';
 
 export default function Home() {
   const router = useRouter();
-  const { artists, setArtists } = useArtists();
+  const { artists, addArtists, clearArtists } = useArtists();
 
   const handleDrop = (newArtists: { name: string; artworks: string[] }[]) => {
-    setArtists(newArtists);
+    addArtists(newArtists);
   };
 
   const handleArtistClick = (artistName: string) => {
@@ -31,15 +31,26 @@ export default function Home() {
         </div>
 
         {artists.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {artists.map((artist, index) => (
-              <ArtistCard
-                key={index}
-                name={artist.name}
-                onClick={() => handleArtistClick(artist.name)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-light">Artistes ({artists.length})</h2>
+              <button
+                onClick={clearArtists}
+                className="text-red-600 hover:text-red-800 transition-colors"
+              >
+                Effacer la bibliothèque
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              {artists.map((artist, index) => (
+                <ArtistCard
+                  key={index}
+                  name={artist.name}
+                  onClick={() => handleArtistClick(artist.name)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
