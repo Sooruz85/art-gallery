@@ -41,7 +41,7 @@ const Lightbox: React.FC<LightboxProps> = ({ image, onClose }) => {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
       onClick={onClose}
     >
-      <div className="relative max-h-[90vh] max-w-[90vw]">
+      <div className="relative w-[80vw] h-[80vh] min-h-[180px] max-h-[90vh] max-w-[90vw]">
         <Image
           src={image}
           alt="Œuvre en plein écran"

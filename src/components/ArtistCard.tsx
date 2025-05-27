@@ -35,7 +35,7 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
   });
 
   const content = (
-    <div className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-100">
+    <div className="group relative aspect-[3/4] min-h-[180px] overflow-hidden rounded-lg bg-gray-100">
       <Image
         src={imagePath}
         alt={`Œuvre de ${name}`}
@@ -53,13 +53,10 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
           target.style.display = 'none';
           target.parentElement?.insertAdjacentHTML(
             'beforeend',
-            `<div class="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
-              Image non disponible
-            </div>`
+            `<div class='absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500 text-sm'>Image non disponible</div>`
           );
         }}
       />
-      <div className="absolute inset-0 bg-black bg-opacity-0 transition-opacity duration-300 group-hover:bg-opacity-20" />
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
         <h3 className="text-lg font-medium text-white">{name}</h3>
       </div>

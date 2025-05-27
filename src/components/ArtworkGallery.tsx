@@ -17,7 +17,7 @@ const ArtworkGallery: React.FC<ArtworkGalleryProps> = ({ artworks, artistName })
         {artworks.map((artwork, index) => (
           <div
             key={index}
-            className="relative aspect-square cursor-pointer overflow-hidden group"
+            className="relative aspect-square min-h-[180px] cursor-pointer overflow-hidden group"
             onClick={() => setSelectedImage(artwork)}
           >
             <Image

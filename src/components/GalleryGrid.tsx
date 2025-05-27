@@ -40,6 +40,7 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({ images, onImageClick }) => {
   }
 
   const handleImageLoad = (url: string) => {
+    console.log('[GalleryGrid] Image chargée :', url);
     setLoadedImages(prev => new Set(prev).add(url));
     setFailedImages(prev => {
       const newSet = new Set(prev);
@@ -48,7 +49,7 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({ images, onImageClick }) => {
     });
   };
 
-  const handleImageError = (url: string, e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const handleImageError = (url: string) => {
     setFailedImages(prev => new Set(prev).add(url));
   };
 
@@ -63,7 +64,7 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({ images, onImageClick }) => {
         return (
           <div
             key={`${cleanUrl}-${index}`}
-            className="relative aspect-square min-h-[180px] h-full w-full cursor-pointer overflow-hidden rounded-lg bg-gray-100 group border border-gray-200"
+            className="relative aspect-square h-64 min-h-[180px] w-full cursor-pointer overflow-hidden rounded-lg bg-gray-100 group border border-gray-200"
             style={{ minHeight: 180 }}
             tabIndex={0}
             aria-label={hasFailed ? 'Image non disponible' : `Image ${index + 1}`}
@@ -105,19 +106,14 @@ const GalleryGrid: React.FC<GalleryGridProps> = ({ images, onImageClick }) => {
                 alt={`Image ${index + 1}`}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className={`object-cover transition-all duration-300 ${
-                  isLoaded ? 'opacity-100 group-hover:scale-105' : 'opacity-0'
-                }`}
+                className="object-cover opacity-100 transition-all duration-300 group-hover:scale-105"
                 onLoad={() => handleImageLoad(cleanUrl)}
-                onError={(e) => handleImageError(cleanUrl, e)}
+                onError={() => handleImageError(cleanUrl)}
                 priority={index < 4}
                 quality={90}
                 unoptimized
                 draggable={false}
               />
-            )}
-            {!hasFailed && (
-              <div className="absolute inset-0 bg-black bg-opacity-0 transition-opacity duration-300 group-hover:bg-opacity-20 pointer-events-none" />
             )}
           </div>
         );
