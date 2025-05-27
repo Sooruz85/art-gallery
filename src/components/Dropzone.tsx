@@ -4,30 +4,67 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 interface DropzoneProps {
-  onDrop: (artists: { name: string; artworks: string[] }[]) => void;
+  onDrop: (artists: { name: string; images: string[] }[]) => void;
 }
 
 const Dropzone: React.FC<DropzoneProps> = ({ onDrop }) => {
   const [error, setError] = useState<string | null>(null);
   const isFileSystemAccessSupported = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
+  const saveFileToPublic = async (file: File, artistName: string): Promise<string> => {
+    const timestamp = Date.now();
+    const cleanFileName = file.name
+      .replace(/[^a-zA-Z0-9.-]/g, '_')
+      .toLowerCase();
+    const fileName = `${artistName}_${timestamp}_${cleanFileName}`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileName', fileName);
+
+    try {
+      console.log('[Dropzone] Upload du fichier:', {
+        originalName: file.name,
+        cleanName: cleanFileName,
+        finalName: fileName
+      });
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'upload du fichier');
+      }
+
+      const data = await response.json();
+      const imageUrl = `/uploads/${data.fileName}`;
+      console.log('[Dropzone] Fichier uploadé avec succès:', imageUrl);
+      return imageUrl;
+    } catch (error) {
+      console.error('[Dropzone] Erreur lors de la sauvegarde du fichier:', error);
+      throw error;
+    }
+  };
+
   const handleFileSystemAccess = useCallback(async () => {
     try {
       const dirHandle = await window.showDirectoryPicker();
-      const artists: { name: string; artworks: string[] }[] = [];
+      const artists: { name: string; images: string[] }[] = [];
 
       for await (const entry of dirHandle.values()) {
         if (entry.kind === 'directory') {
-          const artworks: string[] = [];
+          const images: string[] = [];
           for await (const file of entry.values()) {
             if (file.kind === 'file' && file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
               const fileHandle = await entry.getFileHandle(file.name);
               const fileObj = await fileHandle.getFile();
-              artworks.push(URL.createObjectURL(fileObj));
+              const imageUrl = await saveFileToPublic(fileObj, entry.name);
+              images.push(imageUrl);
             }
           }
-          if (artworks.length > 0) {
-            artists.push({ name: entry.name, artworks });
+          if (images.length > 0) {
+            artists.push({ name: entry.name, images });
           }
         }
       }
@@ -39,13 +76,13 @@ const Dropzone: React.FC<DropzoneProps> = ({ onDrop }) => {
     }
   }, [onDrop]);
 
-  const handleLegacyFileInput = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLegacyFileInput = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
     const artists: { [key: string]: string[] } = {};
 
-    Array.from(files).forEach((file) => {
+    for (const file of Array.from(files)) {
       if (file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
         const path = file.webkitRelativePath;
         const artistName = path.split('/')[0];
@@ -53,13 +90,14 @@ const Dropzone: React.FC<DropzoneProps> = ({ onDrop }) => {
         if (!artists[artistName]) {
           artists[artistName] = [];
         }
-        artists[artistName].push(URL.createObjectURL(file));
+        const imageUrl = await saveFileToPublic(file, artistName);
+        artists[artistName].push(imageUrl);
       }
-    });
+    }
 
-    const formattedArtists = Object.entries(artists).map(([name, artworks]) => ({
+    const formattedArtists = Object.entries(artists).map(([name, images]) => ({
       name,
-      artworks
+      images
     }));
 
     onDrop(formattedArtists);
