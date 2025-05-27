@@ -57,8 +57,8 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
           );
         }}
       />
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-        <h3 className="text-lg font-medium text-white">{name}</h3>
+      <div className="absolute bottom-0 left-0 right-0 bg-white/70 p-4">
+        <h3 className="text-lg font-medium text-gray-900">{name}</h3>
       </div>
     </div>
   );
