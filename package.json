@@ -2,28 +2,68 @@
   "name": "art-gallery",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "build-app": "npm run build && next export -o out && electron-builder --mac",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.artgallery.app",
+    "productName": "Galerie Joséphine",
+    "mac": {
+      "category": "public.app-category.photography",
+      "icon": "public/logo.jpeg",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "darkModeSupport": true
+    },
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "public/**/*"
+    ],
+    "directories": {
+      "buildResources": "public",
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "public",
+        "to": "public"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "public/uploads/**/*"
+    ]
   },
   "dependencies": {
-    "lucide-react": "^0.511.0",
-    "next": "15.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "lucide-react": "^0.344.0",
+    "next": "14.1.0",
+    "react": "^18",
+    "react-dom": "^18",
     "react-dropzone": "^14.3.8"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5",
+    "wait-on": "^7.2.0"
   }
 }

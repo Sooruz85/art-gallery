@@ -7,8 +7,12 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Galerie d'Art Locale",
+  title: "Galerie Joséphine",
   description: "Une galerie d'art locale pour explorer vos collections d'œuvres",
+  icons: {
+    icon: '/logo.jpeg',
+    apple: '/logo.jpeg',
+  },
 };
 
 export default function RootLayout({
@@ -18,6 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
+      <head>
+        <link rel="icon" href="/logo.jpeg" />
+      </head>
       <body className={inter.className}>
         <ArtistsProvider>
           <Navbar />

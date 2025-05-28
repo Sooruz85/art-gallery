@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
+import Image from 'next/image';
 
 interface NavbarProps {
-  onSearch?: (term: string) => void;
+  onSearch?: (value: string) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = React.useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -18,9 +19,20 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
   return (
     <nav className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Titre */}
-        <div className="text-2xl font-bold text-gray-900 tracking-tight">
-          Galerie Joséphine
+        {/* Logo et Titre */}
+        <div className="flex items-center space-x-3">
+          <div className="relative h-10 w-10">
+            <Image
+              src="/logo.jpeg"
+              alt="Logo Galerie Joséphine"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <div className="text-2xl font-bold text-gray-900 tracking-tight">
+            Galerie Joséphine
+          </div>
         </div>
         {/* Barre de recherche */}
         <div className="flex items-center">

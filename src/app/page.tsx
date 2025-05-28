@@ -124,7 +124,7 @@ export default function Home() {
                     <ArtistCard
                       key={`${artist.name}-${index}`}
                       name={artist.name || 'Artiste sans nom'}
-                      imageUrl={firstImage}
+                      imageUrl={firstImage ?? undefined}
                       onClick={() => handleArtistClick(artist.name)}
                     />
                   );

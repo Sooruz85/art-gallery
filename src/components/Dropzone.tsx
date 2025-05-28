@@ -7,6 +7,16 @@ interface DropzoneProps {
   onDrop: (artists: { name: string; images: string[] }[]) => void;
 }
 
+interface FileSystemDirectoryHandle {
+  values(): AsyncIterable<FileSystemHandle>;
+}
+
+declare global {
+  interface Window {
+    showDirectoryPicker: () => Promise<FileSystemDirectoryHandle>;
+  }
+}
+
 const Dropzone: React.FC<DropzoneProps> = ({ onDrop }) => {
   const [error, setError] = useState<string | null>(null);
   const isFileSystemAccessSupported = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
