@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Dropzone from '../components/Dropzone';
 import ArtistCard from '../components/ArtistCard';
 import { useArtists } from '../context/ArtistsContext';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
   const router = useRouter();
   const { artists = [], addArtists, clearArtists } = useArtists();
   const [isClient, setIsClient] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Vérification que nous sommes côté client
   useEffect(() => {
@@ -48,17 +50,20 @@ export default function Home() {
     }
   };
 
-  // Vérification de la validité des artistes
-  const validArtists = React.useMemo(() => {
+  // Filtrage des artistes selon la recherche
+  const filteredArtists = useMemo(() => {
     if (!isClient) return [];
-
-    return Array.isArray(artists) ? artists.filter(artist =>
-      artist &&
-      typeof artist === 'object' &&
-      typeof artist.name === 'string' &&
-      Array.isArray(artist.images)
-    ) : [];
-  }, [artists, isClient]);
+    const term = search.trim().toLowerCase();
+    return Array.isArray(artists)
+      ? artists.filter(artist =>
+          artist &&
+          typeof artist === 'object' &&
+          typeof artist.name === 'string' &&
+          Array.isArray(artist.images) &&
+          artist.name.toLowerCase().includes(term)
+        )
+      : [];
+  }, [artists, isClient, search]);
 
   // Si nous ne sommes pas encore côté client, afficher un état de chargement
   if (!isClient) {
@@ -73,6 +78,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Navbar avec recherche, uniquement sur la page principale */}
+      <Navbar onSearch={setSearch} />
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h1 className="text-5xl font-light mb-8 text-center">Galerie d'Art</h1>
         <p className="text-lg text-gray-600 mb-12 text-center max-w-2xl mx-auto">
@@ -83,10 +90,10 @@ export default function Home() {
           <Dropzone onDrop={handleDrop} />
         </div>
 
-        {validArtists.length > 0 && (
+        {filteredArtists.length > 0 && (
           <>
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-light">Artistes ({validArtists.length})</h2>
+              <h2 className="text-2xl font-light">Artistes ({filteredArtists.length})</h2>
               <button
                 onClick={() => {
                   try {
@@ -101,7 +108,7 @@ export default function Home() {
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {validArtists.map((artist, index) => {
+              {filteredArtists.map((artist, index) => {
                 try {
                   // Vérification sécurisée de l'image
                   const firstImage = artist?.images?.[0] || null;
