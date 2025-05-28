@@ -78,8 +78,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navbar avec recherche, uniquement sur la page principale */}
-      <Navbar onSearch={setSearch} />
+
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h1 className="text-5xl font-light mb-8 text-center">Galerie d'Art</h1>
         <p className="text-lg text-gray-600 mb-12 text-center max-w-2xl mx-auto">
@@ -97,7 +96,9 @@ export default function Home() {
               <button
                 onClick={() => {
                   try {
-                    clearArtists();
+                    if (window.confirm('Êtes-vous sûr de vouloir effacer toute la bibliothèque ? Cette action est irréversible.')) {
+                      clearArtists();
+                    }
                   } catch (error) {
                     console.error('[Home] Erreur lors de la suppression des artistes:', error);
                   }

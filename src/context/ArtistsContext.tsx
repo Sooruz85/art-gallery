@@ -12,6 +12,8 @@ interface ArtistsContextType {
   addArtists: (newArtists: Artist[]) => void;
   getArtistImages: (artistName: string) => string[];
   clearArtists: () => void;
+  deleteArtist: (artistName: string) => void;
+  updateArtistMainImage: (artistName: string, newImageUrl: string) => void;
 }
 
 const ArtistsContext = createContext<ArtistsContextType | undefined>(undefined);
@@ -74,8 +76,59 @@ export function ArtistsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteArtist = async (artistName: string) => {
+    try {
+      const response = await fetch(`/api/artists/${encodeURIComponent(artistName)}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setArtists(prevArtists => prevArtists.filter(artist => artist.name !== artistName));
+      } else {
+        throw new Error('Erreur lors de la suppression de l\'artiste');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'artiste:', error);
+      throw error;
+    }
+  };
+
+  const updateArtistMainImage = async (artistName: string, newImageUrl: string) => {
+    try {
+      const response = await fetch(`/api/artists/${encodeURIComponent(artistName)}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mainImage: newImageUrl }),
+      });
+
+      if (response.ok) {
+        setArtists(prevArtists =>
+          prevArtists.map(artist =>
+            artist.name === artistName
+              ? { ...artist, images: [newImageUrl, ...artist.images.filter(img => img !== newImageUrl)] }
+              : artist
+          )
+        );
+      } else {
+        throw new Error('Erreur lors de la mise à jour de l\'image principale');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'image principale:', error);
+      throw error;
+    }
+  };
+
   return (
-    <ArtistsContext.Provider value={{ artists, addArtists, getArtistImages, clearArtists }}>
+    <ArtistsContext.Provider value={{
+      artists,
+      addArtists,
+      getArtistImages,
+      clearArtists,
+      deleteArtist,
+      updateArtistMainImage
+    }}>
       {children}
     </ArtistsContext.Provider>
   );

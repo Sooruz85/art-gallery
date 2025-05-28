@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Trash2, Camera } from 'lucide-react';
+import { useArtists } from '../context/ArtistsContext';
 
 interface ArtistCardProps {
   name: string;
@@ -11,6 +13,11 @@ interface ArtistCardProps {
 }
 
 const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
+  const { deleteArtist, updateArtistMainImage } = useArtists();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Log pour le débogage
   useEffect(() => {
     console.log(`[ArtistCard] Données reçues pour ${name}:`, {
@@ -29,13 +36,71 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
     ? `/uploads/${encodeURIComponent(imageUrl.split('/').pop() || '')}`
     : '/placeholder.jpg';
 
-  console.log(`[ArtistCard] Chemin de l'image pour ${name}:`, {
-    original: imageUrl,
-    processed: imagePath
-  });
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'artiste "${name}" ?`)) {
+      try {
+        setIsDeleting(true);
+        await deleteArtist(name);
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        alert('Une erreur est survenue lors de la suppression de l\'artiste.');
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUpdating(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', `${name}_${Date.now()}_${file.name}`);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'upload de l\'image');
+      }
+
+      const data = await response.json();
+      const newImageUrl = `/uploads/${data.fileName}`;
+      await updateArtistMainImage(name, newImageUrl);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'image:', error);
+      alert('Une erreur est survenue lors de la mise à jour de l\'image.');
+    } finally {
+      setIsUpdating(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInputRef.current?.click();
+  };
 
   const content = (
     <div className="group relative aspect-[3/4] min-h-[180px] overflow-hidden rounded-lg bg-gray-100">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageChange}
+        accept="image/*"
+        className="hidden"
+      />
       <Image
         src={imagePath}
         alt={`Œuvre de ${name}`}
@@ -48,7 +113,6 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
             processedPath: imagePath,
             error: e
           });
-          // Remplacer l'image par un message d'erreur
           const target = e.target as HTMLElement;
           target.style.display = 'none';
           target.parentElement?.insertAdjacentHTML(
@@ -57,6 +121,24 @@ const ArtistCard: React.FC<ArtistCardProps> = ({ name, imageUrl, onClick }) => {
           );
         }}
       />
+      <div className="absolute top-2 right-2 flex gap-2">
+        <button
+          onClick={handleImageClick}
+          disabled={isUpdating}
+          className="p-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+          title="Changer l'image principale"
+        >
+          <Camera className="w-5 h-5 text-blue-600" />
+        </button>
+        <button
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="p-2 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+          title="Supprimer l'artiste"
+        >
+          <Trash2 className="w-5 h-5 text-red-600" />
+        </button>
+      </div>
       <div className="absolute bottom-0 left-0 right-0 bg-white/70 p-4">
         <h3 className="text-lg font-medium text-gray-900">{name}</h3>
       </div>
